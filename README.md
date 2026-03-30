@@ -1,144 +1,134 @@
-# ⚙️ RPA + AI Hybrid Customer Query Processor
+# ⚙️ AI Customer Query Classifier
 
-An enterprise automation pipeline that combines **RPA-style data ingestion and routing** with an **AI/NLP classification layer** — exactly the pattern used in real-world Automation Anywhere + IQ Bot / NLP integrations.
+An end-to-end **NLP classification pipeline** that automatically reads customer queries, understands what they are asking for, and routes them to the right team — without any manual effort.
 
-This is Sushma's **differentiator project** — pure AI engineers can't build this, and pure RPA engineers wouldn't think of it.
+Built with **HuggingFace Transformers** and **Streamlit**. No paid APIs. Runs on your laptop.
 
 ---
 
-## 🏗️ Pipeline Architecture
+## 🤔 What Problem Does This Solve?
+
+Every business receives hundreds of customer queries daily:
+- *"I was charged twice"*
+- *"My app keeps crashing"*
+- *"Where is my order?"*
+
+Traditionally, a human reads each query and decides where to send it. This is slow, expensive, and inconsistent.
+
+This project automates that decision using **Zero-Shot NLP Classification** — the AI reads each query and decides the category on its own, with no prior training on your specific data.
+
+---
+
+## 🧠 How It Works
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              RPA + AI HYBRID PIPELINE                   │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  Step 1: INGEST (RPA layer)                             │
-│  ┌──────────────────────┐                               │
-│  │ Read CSV / database  │  ← Simulates AA bot reading   │
-│  │ Parse query records  │    shared mailbox or DB       │
-│  └──────────┬───────────┘                               │
-│             │                                           │
-│  Step 2: CLASSIFY (AI layer)                            │
-│  ┌──────────▼───────────┐                               │
-│  │ HuggingFace NLP      │  ← Zero-shot classification   │
-│  │ Zero-shot classifier │    no training data needed    │
-│  │ (bart-large-mnli)    │                               │
-│  └──────────┬───────────┘                               │
-│             │                                           │
-│  Step 3: ROUTE (RPA logic)                              │
-│  ┌──────────▼───────────┐                               │
-│  │ Confidence check     │  ← Threshold-based routing    │
-│  │ ≥ threshold → auto   │    (Human-in-the-Loop)        │
-│  │ < threshold → flag   │                               │
-│  └──────────┬───────────┘                               │
-│             │                                           │
-│  Step 4: ACT (Handler automation)                       │
-│  ┌──────────▼───────────┐                               │
-│  │ Billing handler      │                               │
-│  │ Tech support handler │  ← Simulates AA bot actions   │
-│  │ Order status handler │    (ticket creation, DB       │
-│  │ Refund handler       │    updates, notifications)    │
-│  │ General enquiry      │                               │
-│  └──────────┬───────────┘                               │
-│             │                                           │
-│  Step 5: REPORT (RPA output)                            │
-│  ┌──────────▼───────────┐                               │
-│  │ Summary dashboard    │  ← Simulates AA report bot    │
-│  │ CSV export           │                               │
-│  │ HTML report          │                               │
-│  └──────────────────────┘                               │
-└─────────────────────────────────────────────────────────┘
+Customer Query (text)
+        ↓
+HuggingFace NLP Model
+(facebook/bart-large-mnli)
+        ↓
+Predicted Category + Confidence Score
+        ↓
+    ┌───┴───┐
+High confidence    Low confidence
+(≥ threshold)      (< threshold)
+    ↓                   ↓
+Auto-processed     Sent to human review
+(bot handles it)   (Human-in-the-Loop)
+        ↓
+Summary Report + CSV Export
 ```
 
----
-
-## ✨ Features
-
-- 📥 **CSV ingestion** — upload your own or use built-in sample data
-- 🤖 **Zero-shot NLP** — classifies any query without training data
-- 🔀 **Confidence-based routing** — adjustable threshold for human-in-the-loop
-- 📊 **Live dashboard** — KPIs, category breakdown, full results table
-- ⬇️ **CSV export** — download processed results
-- 📋 **Audit trail** — every decision logged with confidence score
+That's it. Simple, transparent, and explainable — exactly what production AI needs to be.
 
 ---
 
-## 🚀 Quick Start
+## ✨ What This Project Demonstrates
 
-### 1. Clone the repository
+| Skill | How it shows up here |
+|---|---|
+| NLP / Text Classification | Zero-shot classification using BART model |
+| Model selection | Chose `bart-large-mnli` — pre-trained on NLI tasks, works without fine-tuning |
+| Confidence thresholds | Configurable slider — balances automation vs human oversight |
+| Human-in-the-Loop | Low confidence queries never auto-processed — a production AI safety pattern |
+| Data pipeline | CSV ingestion → classify → route → export |
+| UI / Deployment | Streamlit app — model accessible without writing a single API |
+| No data leakage | Model runs 100% locally — no customer data leaves the machine |
+
+---
+
+## 🚀 Run It Yourself
+
 ```bash
-git clone https://github.com/yourusername/rpa-ai-hybrid-processor.git
-cd rpa-ai-hybrid-processor
-```
+# 1. Clone
+git clone [https://github.com/nerdygeek888/ai_classifier_agent.git]
+cd ai_classifier_agent
 
-### 2. Create virtual environment
-```bash
+# 2. Install
 python -m venv venv
-source venv/bin/activate        # On Windows: venv\Scripts\activate
-```
-
-### 3. Install dependencies
-```bash
+venv\Scripts\activate        # Windows
 pip install -r requirements.txt
-```
-> Note: First run downloads the HuggingFace model (~1.6GB). Subsequent runs use the cache.
 
-### 4. Run
-```bash
+# 3. Run
 streamlit run app.py
 ```
 
-**No API key needed** — NLP model runs fully locally.
+> **Note:** First run downloads the NLP model (~1.6GB). After that it loads from cache in seconds. No API key needed.
 
 ---
 
-## 📁 Project Structure
+## 📊 Sample Results
+
+Given these queries, the model predicts:
+
+| Query | Predicted Category | Confidence |
+|---|---|---|
+| "I was charged twice for my order" | billing | 94% |
+| "My app crashes on startup" | technical_support | 91% |
+| "Where is my order ORD-5521?" | order_status | 89% |
+| "I want a refund for this month" | refund | 87% |
+| "What are your business hours?" | general_enquiry | 76% |
+
+---
+
+## 🗂️ Project Structure
 
 ```
-project3-rpa-ai-hybrid/
-├── app.py                  # Streamlit UI (3-tab pipeline view)
-├── processor.py            # Core pipeline: ingest → classify → route → handle
-├── report_generator.py     # HTML report generation
-├── sample_queries.csv      # Sample CSV for testing uploads
-├── requirements.txt
-└── README.md
+├── app.py              → Streamlit UI (input, pipeline, report tabs)
+├── processor.py        → NLP classification + routing logic
+├── report_generator.py → HTML summary report
+├── sample_queries.csv  → Test data to try the upload feature
+└── requirements.txt    → All dependencies
 ```
 
 ---
 
-## 🧪 Classification Categories
+## 🔧 Tech Stack
 
-| Category | Example Query |
-|----------|--------------|
-| `billing` | "I was charged twice for my order" |
-| `technical_support` | "My app crashes on startup" |
-| `order_status` | "Where is my order ORD-5521?" |
-| `refund` | "I want a refund for this month" |
-| `general_enquiry` | "What are your business hours?" |
-
----
-
-## 🔑 Key Design Decisions
-
-- **Zero-shot classification**: Uses `facebook/bart-large-mnli` — no labelled training data required, works out of the box for new categories
-- **Confidence threshold**: Configurable via UI slider — queries below threshold go to human review, above threshold are auto-processed
-- **Human-in-the-Loop**: Low-confidence queries are never auto-acted on — mirrors enterprise compliance requirements
-- **Local model**: No external API calls for NLP — reduces cost and latency, increases data privacy
+| Tool | Purpose |
+|---|---|
+| `facebook/bart-large-mnli` | Zero-shot text classification |
+| HuggingFace Transformers | Model loading and inference |
+| Streamlit | Interactive web UI |
+| Pandas | Data handling and CSV export |
+| Python 3.11 | Core language |
 
 ---
 
-## 🆚 Why This Project Stands Out
+## 💡 Key Technical Decisions
 
-Most GitHub AI projects are either pure ML notebooks or simple chatbots. This project demonstrates:
-1. **Enterprise automation thinking** — structured pipeline with audit trail
-2. **Hybrid AI + RPA pattern** — the real-world pattern, not academic demos
-3. **Production considerations** — Human-in-the-Loop, confidence thresholds, error logging
-4. **Business context** — solves a real Finance/Operations problem
+**Why zero-shot classification?**
+Most classification projects require labelled training data (hundreds of examples per category). Zero-shot classification skips that entirely — the model uses its understanding of language to classify into any category you define. This makes it immediately usable for any business domain without data collection.
+
+**Why a confidence threshold?**
+AI models are not always right. Instead of blindly automating every decision, queries below a set confidence score are flagged for human review. This is a standard pattern in production ML systems — it keeps the automation rate high while protecting against wrong decisions.
+
+**Why local model?**
+Customer query data is sensitive. Running the model locally means no data is sent to external APIs. This matters in Finance, Healthcare, and Legal domains.
 
 ---
 
 ## 📌 Author
 
-**Sushma Nadkarni** — RPA Solutions Lead & AI Automation Engineer  
-[LinkedIn](https://linkedin.com/in/yourprofile)
+**Sushma Nadkarni** — AI Automation Engineer | Python | NLP | HuggingFace  
+🔗 [LinkedIn](https://www.linkedin.com/in/sushmanadkarni-14087a117/) · [GitHub](https://github.com/nerdygeek888)
